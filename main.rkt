@@ -44,17 +44,16 @@
     closedlist: associationlist as described in priority-queue.rkt
     graph: associationlist as described in graph-helper.rkt
 |# 
-(define (explore-node currentNode target-node openlist closedlist graph)
+(define (explore-node target-node openlist closedlist graph)
     (cond
-        [(empty? openlist) "error"]
+        [(empty? openlist) closedlist]
         [(equal? (caar openlist) target-node) closedlist]
         (else
             (explore-node
-                (caar openlist)
                 target-node
-                (remove (assoc currentNode openlist) (explore-neighbours currentNode (get-neighbours (get-node currentNode graph)) target-node openlist graph))
+                (explore-neighbours (caar openlist) (get-neighbours (get-node (caar openlist) graph)) target-node openlist graph)
                 ;; fix
-                (cons (assoc currentNode openlist) closedlist)
+                (cons (assoc (caar openlist) openlist) closedlist)
                 graph
             )
         )
@@ -76,7 +75,7 @@
 |#
 (define (explore-neighbours currentNode currentNodeNeighbours target-node openlist graph)
     (cond
-    [(empty? currentNodeNeighbours) openlist]
+    [(empty? currentNodeNeighbours) (remove (assoc currentNode openlist) openlist)]
     [(isMember? (caar currentNodeNeighbours) openlist) 
         ;; Case 1
         (if (< (calc-f (get-node (caar currentNodeNeighbours) graph) (+ (get-cost (caar currentNodeNeighbours) openlist) (cadar currentNodeNeighbours)) (get-node target-node graph)) (get-heuristic (assoc (caar currentNodeNeighbours) openlist)))
@@ -137,7 +136,7 @@ Calculate the beeline of a given node to the target node
 ;–––– DEBUG ––––
 ;–––––––––––––––
 
-(explore-node "a" "f" (add (construct-elem "a" 15.620499351813308 0 "a") '()) '() g)
-;(explore-neighbours "a" (get-neighbours (get-node "a" g)) "d" '(("a" (15.620499351813308 0 "a"))) g)
+(explore-node "e" (add (construct-elem "a" 15.620499351813308 0 "a") '()) '() g)
+;(explore-neighbours "a" (get-neighbours (get-node "a" g)) "f" '(("a" (15.620499351813308 0 "a"))) g)
 
 ;(calc-f (get-node (caar '(("b" 10) ("c" 20))) g) (+ 0 (cadar '(("b" 10) ("c" 20)))) (get-node "d" g))
