@@ -110,8 +110,7 @@
 
   Returns: Number
 |#
-(define
-(get-heuristic elem)
+(define (get-heuristic elem)
   (caadr elem)
 )
 

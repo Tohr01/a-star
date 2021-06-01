@@ -47,7 +47,7 @@
 (define (explore-node target-node openlist closedlist graph)
     (cond
         [(empty? openlist) closedlist]
-        [(equal? (caar openlist) target-node) closedlist]
+        [(equal? (caar openlist) target-node) (cons (car openlist) closedlist)]
         (else
             (explore-node
                 target-node
