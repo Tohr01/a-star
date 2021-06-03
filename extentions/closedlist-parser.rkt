@@ -2,7 +2,7 @@
 
 #|
   Carl Raabe
-  4th June 2021
+  3rd June 2021
   Informatik eA | PP | Frau Berg
 
   Parses openlist and creates readable String representing the path A* calculated
