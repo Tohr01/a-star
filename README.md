@@ -9,5 +9,5 @@ git clone https://github.com/Tohr01/a-star
 3. run
 4. start A* by typing in
 ```
-(a-star startNode targetNode graph)
+(a-star startNode targetNode g)
 ```
