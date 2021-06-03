@@ -55,6 +55,7 @@ Get specific data from nodes
   (assoc node-identifier graph)
 )
 
+; Providing functions to other files
 (provide 
   get-neighbours
   get-node

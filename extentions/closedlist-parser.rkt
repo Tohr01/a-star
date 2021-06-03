@@ -58,4 +58,5 @@
   )
 )
 
+; Providing function to other files
 (provide get-path-from)
