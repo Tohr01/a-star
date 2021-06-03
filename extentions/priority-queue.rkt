@@ -5,11 +5,11 @@
     30th May 2021
     Informatik eA | PP | Frau Berg
 
-    Form: '((key (heuristic cost predecessor-node))
-    Implements a simple priority queue for an associationlist
+    Form: '((node-identifier (heuristic cost predecessor-node))
+    Implements a simple priority queue for an associationlist with some additional management functions
 |#
-;;EXAMPLE REMOVE!! '(("a" (120 10 "b")) ("b" (120 10 "a")) ("d" (90 10 "b")))
-; temporary list used by some functions
+
+; –– temporary list used by some functions ––
 (define templist '())
 
 #|
@@ -18,7 +18,7 @@
   elem: list of form '((node (heuristic cost predecessor-node)) -> z.B.: '(("a" (120 10 "b"))
   queue: queue of form '((node (heuristic cost predecessor-node) ... '((key (heuristic cost predecessor-node)))
 
-  returns: updated queue
+  returns: queue
 |#
 (define (add elem queue)
   (if (assoc (get-elem-string elem) queue)
@@ -38,10 +38,27 @@
   )
 )
 
+#|
+  Gets cost for given in node-identifier in queue
+
+  node-identifier: String
+  node-identifier: queue
+
+  Returns: Number (Cost of node)
+|#
 (define (get-cost node-identifier queue) 
   (cadadr (assoc node-identifier queue))
 )
 
+#|
+  Sets cost for given node-identifier in queue
+
+  node-identifier: String
+  cost: number
+  queue: queue
+
+  Returns: new queue with new cost for given node-identifier
+|#
 (define (set-cost node-identifier cost queue)
   (insert-at-index
     (remove (assoc node-identifier queue) queue)
@@ -50,6 +67,14 @@
   )
 )
 
+#|
+  Checks if node is part of queue
+
+  node-identifier: String
+  queue: queue
+
+  Returns: boolean
+|#
 (define (isMember? node-identifier queue)
   (if (assoc node-identifier queue) #t #f)
 )
@@ -60,6 +85,15 @@
 ––––––––––––––––––––––––
 |#
 
+#|
+  Insert value at index in list
+
+  list: list
+  value: any
+  index: number (where element should be inserted)
+
+  Returns: list with inserted element
+|#
 (define
   (insert-at-index list value index)
   (if (= index 0)
@@ -68,6 +102,15 @@
       )
   )
 
+#|
+  Get index of value, where list[...] < value < list[...]
+
+  list: list of numbers
+  value: number
+  index: number (default 0) 
+
+  Return index
+|#
 (define
   (get-index-of-<-order list value index)
   (cond
@@ -77,34 +120,69 @@
      )
     )
 
+
+#|
+  Get index of node in queue
+
+  node-identifier: String
+  queue: queue
+  index: number (default 0)
+
+  Returns index of node in queue
+|#
 (define (get-index-of node-identifier queue index)
-(if (equal? (assoc node-identifier queue) (car queue))
-  index
-  (get-index-of node-identifier (cdr queue) (+ index 1))
-)
+  (if (equal? (assoc node-identifier queue) (car queue))
+    index
+    (get-index-of node-identifier (cdr queue) (+ index 1))
+  )
 )
 
-(define
-(conv-assoc-list-to-heuristic associationlist)
-  (if (empty? associationlist) templist
-    (append (cons (caadar associationlist) templist) (conv-assoc-list-to-heuristic (cdr associationlist))) 
+#|
+  Converts queue to list of f values -> '(x y z ...)
+
+  queue: queue
+
+  Returns: list of numbers
+|#
+(define (conv-assoc-list-to-heuristic queue)
+  (if (empty? queue) templist
+    (append (cons (caadar queue) templist) (conv-assoc-list-to-heuristic (cdr queue))) 
 ))
 
+#|
+  elem: node
 
+  Returns: node-identifier of node
+|#
 (define (get-elem-string elem)
   (car elem)
 )
 
+#|
+  elem: node
+
+  Returns: node-identifier of node
+|#
 (define (get-predecessor elem)
   (car(cddadr elem))
 )
 
+#|
+  Constructs element of form '(node-identifier (fValue cost predecessor-node))
+
+  node-identifier: String
+  heuristic: number (value of f(n))
+  cost: number
+  predecessor-node: String
+
+  Returns elem
+|#
 (define (construct-elem node-identifier heuristic cost predecessor-node) 
     (list node-identifier (list heuristic cost predecessor-node))
 )
 
 #|
-  Returns heuristic for given elem
+  Returns f for given elem
 
   elem: Has to has format mentionend above. E.g.: ("a" (250 10 "b"))
 

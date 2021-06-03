@@ -5,54 +5,63 @@
     30th May 2021
     Informatik eA | PP | Frau Berg
 
-    A implementation of the A* Algorithm
+    A implementation of the A* Algorithm in Scheme
 |#
-
-;; TODO init costs
-;; Parse closeslist
 
 ; –– Requirements ––
 (require "./extentions/graph-helper.rkt")
 (require "./extentions/priority-queue.rkt")
+(require "./extentions/closedlist-parser.rkt")
 
 ; –– Graph ––
 (define g '(
-            ;("a" (0 15 (("b" 10) ("c" 20))))
-            ;("b" (10 3 (("a" 10) ("d" 10))))
-            ;("c" (14 1 (("a" 20) ("d" 10))))
-            ;("d" (11 5 (("c" 10) ("d" 10))))
             ("a" (0 0 (("b" 10) ("c" 10))))
             ("b" (10 3 (("a" 10) ("c" 10))))
             ("c" (3 10 (("a" 10) ("d" 10) ("f" 20))))
             ("d" (10 10 (("c" 10) ("f" 10))))
-            ("e" (15 5 (("b" 30) ("f" 10))))
+            ("e" (15 5 (("b" 30)("f" 10))))
             ("f" (13 15 (("c" 20) ("d" 10) ("e" 10))))
             )
   )
 
+#|
+    Main A*-Algorithm
 
-(define
-    (a-star start-node target-node openlist closedlist graph)
- 1   
+    startNode: node-identifier (see priority-queue.rkt) (start)
+    targetNode: node-identifier (see priority-queue.rkt) (target)
+    graph: graph (see graph-helper.rkt)
+
+    Returns: String (optimal path)
+|#
+(define (a-star startNode targetNode graph)
+    (get-path-from (explore-node 
+        targetNode 
+        (add 
+            (construct-elem 
+                startNode 
+                (calc-f (get-node startNode graph) 0 (get-node targetNode graph))
+                0 
+                startNode) 
+            '()) 
+        '() g) startNode)
 )
 
 #|
-    predecessor-node: String e.g.: "a"
-    currentNode: String e.g.: "a"
-    target-node: String e.g: "a"
+    Explores nodes in openlist. Returns closedlist when targetNode
+
+    targetNode: String e.g: "a"
     openlist: associationlist as described in priority-queue.rkt
     closedlist: associationlist as described in priority-queue.rkt
     graph: associationlist as described in graph-helper.rkt
 |# 
-(define (explore-node target-node openlist closedlist graph)
+(define (explore-node targetNode openlist closedlist graph)
     (cond
-        [(empty? openlist) closedlist]
-        [(equal? (caar openlist) target-node) (cons (car openlist) closedlist)]
+        [(empty? openlist) '()]
+        [(equal? (caar openlist) targetNode) (cons (car openlist) closedlist)]
         (else
             (explore-node
-                target-node
-                (explore-neighbours (caar openlist) (get-neighbours (get-node (caar openlist) graph)) target-node openlist graph)
-                ;; fix
+                targetNode
+                (explore-neighbours (caar openlist) (get-neighbours (get-node (caar openlist) graph)) targetNode openlist graph)
                 (cons (assoc (caar openlist) openlist) closedlist)
                 graph
             )
@@ -61,31 +70,37 @@
 )
 
 #|
-    predecessor-node: "a"
-    currentNode: "a"
-    currentNodeNeighbours: '(("b" 10) ("c" 20))
-    target-node: "a"
-    openlist
+    Explores Neighbours for given node, adds them to the openlist or replaces the cost value when lower
+    
+    Cases:  
+        1. neighbour is in list and key number is smaller than in openlist
+        2. neighbour is in list and key number is larger than in openlist
+            - costs to get to nodes are lower -> replace costs
+            - costs higher -> nothing
+        3. neighbour is not in list -> add to list with neighbour-id ...
 
-    1. nachbar ist in liste und kennzahl ist kleiner als in openlist
-    2. nachbar ist in list und kennzahl ist größer als in openlist
-        - kosten um zu knoten zu kommen sind niedriger -> kosten ersetzen
-        - kosten nicht niedriger -> nichts
-    3. nachbar ist nicht in list -> fügen liste hinzu mit nachbar-id ...
+    Params:
+        currentNode: node-identifier (see priority-queue.rkt) (currentNode which is currently being investigated)
+        currentNodeNeighbours node-identifier (see graph-helper.rkt) (neighbours of currentNode)
+        targetNode: node-identifier (see-priority-queue.rkt)
+        openlist: openlist (see priority-queue.rkt)
+        graph: graph (see graph-helper.rkt)
+
+    Returns: updated openlist
 |#
-(define (explore-neighbours currentNode currentNodeNeighbours target-node openlist graph)
+(define (explore-neighbours currentNode currentNodeNeighbours targetNode openlist graph)
     (cond
     [(empty? currentNodeNeighbours) (remove (assoc currentNode openlist) openlist)]
     [(isMember? (caar currentNodeNeighbours) openlist) 
         ;; Case 1
-        (if (< (calc-f (get-node (caar currentNodeNeighbours) graph) (+ (get-cost (caar currentNodeNeighbours) openlist) (cadar currentNodeNeighbours)) (get-node target-node graph)) (get-heuristic (assoc (caar currentNodeNeighbours) openlist)))
+        (if (< (calc-f (get-node (caar currentNodeNeighbours) graph) (+ (get-cost (caar currentNodeNeighbours) openlist) (cadar currentNodeNeighbours)) (get-node targetNode graph)) (get-heuristic (assoc (caar currentNodeNeighbours) openlist)))
             (explore-neighbours 
                 currentNode 
                 (cdr currentNodeNeighbours) 
-                target-node 
+                targetNode 
                 (add (construct-elem 
                          (caar currentNodeNeighbours) 
-                         (calc-f (get-node (caar currentNodeNeighbours) graph) (+ (get-cost (caar currentNodeNeighbours) openlist) (cadar currentNodeNeighbours)) (get-node target-node graph))
+                         (calc-f (get-node (caar currentNodeNeighbours) graph) (+ (get-cost (caar currentNodeNeighbours) openlist) (cadar currentNodeNeighbours)) (get-node targetNode graph))
                              (if (< (+ (get-cost (caar currentNodeNeighbours) openlist) (cadar currentNodeNeighbours)) (get-cost (caar currentNodeNeighbours) openlist))
                                  (+ (get-cost (caar currentNodeNeighbours) openlist) (cadar currentNodeNeighbours))
                                  (get-cost (caar currentNodeNeighbours) openlist)
@@ -97,7 +112,7 @@
             (explore-neighbours 
                 currentNode 
                 (cdr currentNodeNeighbours) 
-                target-node 
+                targetNode 
                 (if (< (+ (get-cost (caar currentNodeNeighbours) openlist) (cadar currentNodeNeighbours)) (get-cost (caar currentNodeNeighbours) openlist)) (set-cost (caar currentNodeNeighbours) (+ (get-cost (caar currentNodeNeighbours) openlist) (cadar currentNodeNeighbours)) openlist) openlist)
                 graph
             )
@@ -107,8 +122,8 @@
             (explore-neighbours 
                 currentNode 
                 (cdr currentNodeNeighbours) 
-                target-node
-                (add (construct-elem (caar currentNodeNeighbours) (calc-f (get-node (caar currentNodeNeighbours) graph) (+ (get-cost currentNode openlist) (cadar currentNodeNeighbours)) (get-node target-node graph)) (+ (get-cost currentNode openlist) (cadar currentNodeNeighbours)) currentNode) openlist)     
+                targetNode
+                (add (construct-elem (caar currentNodeNeighbours) (calc-f (get-node (caar currentNodeNeighbours) graph) (+ (get-cost currentNode openlist) (cadar currentNodeNeighbours)) (get-node targetNode graph)) (+ (get-cost currentNode openlist) (cadar currentNodeNeighbours)) currentNode) openlist)     
                 graph)
         )
     )
@@ -121,22 +136,22 @@
 |#
 
 
+#|
+    Calculates the value of f(n) by adding g(n) and h(n) together
+
+    node: currentNode to be processed
+
+    Returns: Number (fValue) 
+|#
 (define (calc-f node costs targetNode)
     (+ costs (beeline (get-x node) (get-x targetNode) (get-y node) (get-y targetNode)))
 )
 
 #|
-Calculate the beeline of a given node to the target node
+    Calculate the hypotenuse of a right-angled triangle
+
+    Returns: Number (Length of hypotenuse)
 |#
 (define (beeline x1 x2 y1 y2)
     (sqrt (+ (expt (abs (- x1 x2)) 2) (expt (abs (- y1 y2)) 2)))
 )
-
-;–––––––––––––––
-;–––– DEBUG ––––
-;–––––––––––––––
-
-(explore-node "e" (add (construct-elem "a" 15.620499351813308 0 "a") '()) '() g)
-;(explore-neighbours "a" (get-neighbours (get-node "a" g)) "f" '(("a" (15.620499351813308 0 "a"))) g)
-
-;(calc-f (get-node (caar '(("b" 10) ("c" 20))) g) (+ 0 (cadar '(("b" 10) ("c" 20)))) (get-node "d" g))
