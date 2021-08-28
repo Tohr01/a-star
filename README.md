@@ -1,4 +1,4 @@
-# A implementation of the A* search algorithm in Scheme (No visual interface)
+# A implementation of the A* search algorithm in Scheme/Racket (No visual interface)
 
 ### Usage
 1. Clone the repo
