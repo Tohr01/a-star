@@ -5,9 +5,9 @@
 ````
 git clone https://github.com/Tohr01/a-star
 ````
-2. open main.rkt
-3. run
-4. start A* by typing in
+2. Open main.rkt in a IDE such as Dr. Racket
+3. Run
+4. Start the A* search algorithm by typing in
 ```
 (a-star startNode targetNode graph)
 ```
