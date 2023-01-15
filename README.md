@@ -5,7 +5,7 @@
 ````
 git clone https://github.com/Tohr01/a-star
 ````
-2. Open main.rkt in a IDE such as Dr. Racket
+2. Open main.rkt in an IDE such as Dr. Racket
 3. Run
 4. Start the A* search algorithm by typing in
 ```
